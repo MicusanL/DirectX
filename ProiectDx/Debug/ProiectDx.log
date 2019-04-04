@@ -1,0 +1,3 @@
+﻿  Meshes.cpp
+d:\facultate\dx\proiectdx\proiectdx\meshes.cpp(244): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  ProiectDx.vcxproj -> D:\Facultate\Dx\ProiectDx\Debug\ProiectDx.exe
