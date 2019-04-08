@@ -4,8 +4,27 @@
 #include <d3dx9.h>
 #include "Camera.h"
 
+struct Coordinates
+{
+	float x, y, z;
+};
+int x, y, z;
 
+struct Angle {
+	float x, y, z;
+};
 
+struct Size {
+	float x, y, z;
+};
+
+struct ObjectDetailes {
+	Coordinates coordinates;
+	Angle angle;
+	Size size;
+
+}naruto;
+void formatNaruto(ObjectDetailes narutoMoving);
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------
@@ -167,13 +186,20 @@ HRESULT InitGeometry()
 
 	//-------------------------------------------
 
+
+	/*
 	D3DXMATRIXA16 matWorldRot, matWorldTr;
 	D3DXMatrixRotationX(&matWorldRot, 90);
 	D3DXMatrixTranslation(&matWorldTr, 0, -100, 0);
 	d3dDevice->SetTransform(D3DTS_WORLD, &(matWorldRot*matWorldTr));
-
+	*/
 	//--------------------------------------------
+	ObjectDetailes firstNaruto;
+	firstNaruto.angle = { 90.0f, 0.0f, 0.0f };
+	firstNaruto.coordinates = { 0.0f, 0.0f, 0.0f };
+	firstNaruto.size = { 1.0f, 1.0f, 1.0f };
 
+	formatNaruto(firstNaruto);
 	return S_OK;
 }
 
@@ -207,19 +233,84 @@ VOID Cleanup()
 	if (D3D != NULL)
 		D3D->Release();
 }
+void scallNaruto(float x, float y, float z) {
+	naruto.size.x += x;
+	naruto.size.y += y;
+	naruto.size.z += z;
 
+	D3DXMATRIXA16 scallingMatrix;
+	D3DXMatrixScaling(&scallingMatrix, naruto.size.x, naruto.size.y, naruto.size.z);
+	d3dDevice->SetTransform(D3DTS_WORLD, &scallingMatrix);
+
+}
+
+D3DXMATRIXA16 rotateNaruto(Angle angle) {
+
+	naruto.angle.x += angle.x;
+	naruto.angle.y += angle.y;
+	naruto.angle.z += angle.z;
+
+	D3DXMATRIXA16 matWorldRotX, matWorldRotY, matWorldRotZ;
+
+	D3DXMatrixRotationX(&matWorldRotX, naruto.angle.x);
+	D3DXMatrixRotationY(&matWorldRotY, naruto.angle.y);
+	D3DXMatrixRotationZ(&matWorldRotZ, naruto.angle.z);
+
+	return (matWorldRotX * matWorldRotY * matWorldRotZ);
+
+}
+
+D3DXMATRIXA16 translateNaruto(Coordinates coordinates) {
+
+	naruto.coordinates.x += coordinates.x;
+	naruto.coordinates.y += coordinates.y;
+	naruto.coordinates.z += coordinates.z;
+
+	D3DXMATRIXA16 matWorldTranslation;
+	D3DXMatrixTranslation(&matWorldTranslation, naruto.coordinates.x, naruto.coordinates.y, naruto.coordinates.z);
+	return matWorldTranslation;
+
+}
+
+D3DXMATRIXA16 scalNaruto(Size size) {
+
+	naruto.size.x += size.x;
+	naruto.size.y += size.y;
+	naruto.size.z += size.z;
+
+	D3DXMATRIXA16 matWorldScalation;
+	D3DXMatrixScaling(&matWorldScalation, naruto.size.x, naruto.size.y, naruto.size.z);
+	return matWorldScalation;
+
+}
+
+void formatNaruto(ObjectDetailes narutoMoving) {
+
+	D3DXMATRIXA16 matWorldRotation = rotateNaruto(narutoMoving.angle);
+	D3DXMATRIXA16 matWorldTranslation = translateNaruto(narutoMoving.coordinates);
+	D3DXMATRIXA16 matWorldScalation = scalNaruto(narutoMoving.size);
+
+	D3DXMATRIXA16 matWorld = matWorldRotation * matWorldTranslation * matWorldScalation;
+
+	d3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+}
 
 VOID SetupWorldMatrix()
 {
 	static int index = 0;
-	int fullRotationIterationsNumber = 400;
+	int fullRotationIterationsNumber = 10;
+	int rotationStep = 10;
 	// For our world matrix, we will just leave it as the identity
-	D3DXMATRIXA16 matWorld;
+
+	ObjectDetailes narutoMoving = { 0 };
+
 	if (index < fullRotationIterationsNumber) {
-		D3DXMatrixRotationY(&matWorld, timeGetTime() / 1000.0f);
+		// rotateNaruto(rotationStep, 0, 0);
+		//narutoMoving.angle.x = rotationStep;
 	}
 	else {
-		D3DXMatrixRotationX(&matWorld, timeGetTime() / 1000.0f);
+		// rotateNaruto(0, rotationStep, 0);
+		//narutoMoving.angle.y = rotationStep;
 	}
 
 	if (index < fullRotationIterationsNumber * 2) {
@@ -227,11 +318,18 @@ VOID SetupWorldMatrix()
 	}
 	else
 	{
+		//scallNaruto(0.1f, 0.1f, 0.1f);
+		narutoMoving.size.x = -0.1f;
+		narutoMoving.size.y = -0.1f;
+		narutoMoving.size.z = -0.1f;
 		index = 0;
 	}
 
-	d3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	//narutoMoving.coordinates.y = 1;
+	formatNaruto(narutoMoving);
+
 }
+
 
 float distance;
 int direction = 1;//1 forward, -1 backward
